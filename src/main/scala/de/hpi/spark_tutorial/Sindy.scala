@@ -90,7 +90,7 @@ root
 
      */
 
-    val columns = tables.flatMap( t =>
+    val columns: immutable.Seq[Dataset[Row]] = tables.flatMap(t =>
       t.columns
         .map(
           t.select(_)   // create a new dataset with a single column
@@ -100,14 +100,14 @@ root
 
     columns.foreach(_.cache)
 
-    val candidatePairs = columns.flatMap{ colA: Dataset[Row] =>
+    val candidatePairs: immutable.Seq[(Dataset[Row], Dataset[Row])] = columns.flatMap{ colA: Dataset[Row] =>
       columns
         .filter(_ != colA)                            // do not check with itself
         .filter(_.dtypes(0)._2 == colA.dtypes(0)._2)  // filter for equal data types
         .map( (colA,_) )
     }
 
-    val inclusionDependencies = candidatePairs.filter{ cols =>
+    val inclusionDependencies: immutable.Seq[(Dataset[Row], Dataset[Row])] = candidatePairs.filter{ cols =>
       cols._1.except(cols._2).count == 0}
 
     inclusionDependencies
