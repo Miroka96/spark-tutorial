@@ -16,7 +16,7 @@ object Sindy {
         .csv(source)
         .repartition(partitionCount)
     }
-    tables.foreach(_.printSchema())
+    //tables.foreach(_.printSchema())
     /*
 root
  |-- R_REGIONKEY: integer (nullable = true)
