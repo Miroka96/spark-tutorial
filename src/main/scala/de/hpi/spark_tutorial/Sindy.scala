@@ -98,10 +98,7 @@ root
             .distinct ) // add set functionality
     )
 
-    println("prepared columns")
     columns.foreach(_.cache)
-    println("cached columns")
-    println()
 
     val candidatePairs = columns.flatMap{ colA: Dataset[Row] =>
       columns
@@ -113,61 +110,31 @@ root
     val inclusionDependencies = candidatePairs.filter{ cols =>
       cols._1.except(cols._2).count == 0}
 
-    println("Inclusion Dependencies:")
     inclusionDependencies
-      .map( cols => (cols._1.columns(0), cols._2.columns(0)) )
-      .foreach( cols => println(s"${cols._1} is included in ${cols._2}"))
+      .map( cols => (cols._1.columns(0), cols._2.columns(0)) )  // further use only column names
+      .groupBy(_._1)
+      .map{ keyValue => (keyValue._1, keyValue._2.map(_._2).sorted.reduce( _ + ", " + _)) }
+      .toList.sortBy(_._1)
+      .foreach( cols => println(s"${cols._1} < ${cols._2}"))
 
     /*
-    R_REGIONKEY is included in N_NATIONKEY
-R_REGIONKEY is included in N_REGIONKEY
-R_REGIONKEY is included in S_NATIONKEY
-R_REGIONKEY is included in C_NATIONKEY
-N_NATIONKEY is included in S_NATIONKEY
-N_NATIONKEY is included in C_NATIONKEY
-N_REGIONKEY is included in R_REGIONKEY
-N_REGIONKEY is included in N_NATIONKEY
-N_REGIONKEY is included in S_NATIONKEY
-N_REGIONKEY is included in C_NATIONKEY
-S_SUPPKEY is included in C_CUSTKEY
-S_SUPPKEY is included in P_PARTKEY
-S_SUPPKEY is included in L_SUPPKEY
-S_NATIONKEY is included in N_NATIONKEY
-S_NATIONKEY is included in C_NATIONKEY
-C_CUSTKEY is included in P_PARTKEY
-C_NATIONKEY is included in N_NATIONKEY
-C_NATIONKEY is included in S_NATIONKEY
-P_SIZE is included in S_SUPPKEY
-P_SIZE is included in C_CUSTKEY
-P_SIZE is included in P_PARTKEY
-P_SIZE is included in L_PARTKEY
-P_SIZE is included in L_SUPPKEY
-L_ORDERKEY is included in O_ORDERKEY
-L_PARTKEY is included in P_PARTKEY
-L_SUPPKEY is included in S_SUPPKEY
-L_SUPPKEY is included in C_CUSTKEY
-L_SUPPKEY is included in P_PARTKEY
-L_LINENUMBER is included in N_NATIONKEY
-L_LINENUMBER is included in S_SUPPKEY
-L_LINENUMBER is included in S_NATIONKEY
-L_LINENUMBER is included in C_CUSTKEY
-L_LINENUMBER is included in C_NATIONKEY
-L_LINENUMBER is included in P_PARTKEY
-L_LINENUMBER is included in P_SIZE
-L_LINENUMBER is included in L_PARTKEY
-L_LINENUMBER is included in L_SUPPKEY
-L_LINENUMBER is included in O_ORDERKEY
-L_TAX is included in L_DISCOUNT
-L_LINESTATUS is included in O_ORDERSTATUS
-L_COMMIT is included in L_SHIP
-L_COMMIT is included in L_RECEIPT
-O_CUSTKEY is included in C_CUSTKEY
-O_CUSTKEY is included in P_PARTKEY
-O_SHIPPRIORITY is included in R_REGIONKEY
-O_SHIPPRIORITY is included in N_NATIONKEY
-O_SHIPPRIORITY is included in N_REGIONKEY
-O_SHIPPRIORITY is included in S_NATIONKEY
-O_SHIPPRIORITY is included in C_NATIONKEY
+C_CUSTKEY < P_PARTKEY
+C_NATIONKEY < N_NATIONKEY, S_NATIONKEY
+L_COMMIT < L_RECEIPT, L_SHIP
+L_LINENUMBER < C_CUSTKEY, C_NATIONKEY, L_PARTKEY, L_SUPPKEY, N_NATIONKEY, O_ORDERKEY, P_PARTKEY, P_SIZE, S_NATIONKEY, S_SUPPKEY
+L_LINESTATUS < O_ORDERSTATUS
+L_ORDERKEY < O_ORDERKEY
+L_PARTKEY < P_PARTKEY
+L_SUPPKEY < C_CUSTKEY, P_PARTKEY, S_SUPPKEY
+L_TAX < L_DISCOUNT
+N_NATIONKEY < C_NATIONKEY, S_NATIONKEY
+N_REGIONKEY < C_NATIONKEY, N_NATIONKEY, R_REGIONKEY, S_NATIONKEY
+O_CUSTKEY < C_CUSTKEY, P_PARTKEY
+O_SHIPPRIORITY < C_NATIONKEY, N_NATIONKEY, N_REGIONKEY, R_REGIONKEY, S_NATIONKEY
+P_SIZE < C_CUSTKEY, L_PARTKEY, L_SUPPKEY, P_PARTKEY, S_SUPPKEY
+R_REGIONKEY < C_NATIONKEY, N_NATIONKEY, N_REGIONKEY, S_NATIONKEY
+S_NATIONKEY < C_NATIONKEY, N_NATIONKEY
+S_SUPPKEY < C_CUSTKEY, L_SUPPKEY, P_PARTKEY
      */
   }
 }
