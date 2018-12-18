@@ -6,7 +6,7 @@ import scala.collection.immutable
 
 object Sindy {
 
-  def discoverINDs(inputs: List[String], spark: SparkSession, partitionCount :Int = 24): Unit = {
+  def discoverINDs(inputs: List[String], spark: SparkSession, partitionCount :Int = 32): Unit = {
     val tables: immutable.Seq[DataFrame] = inputs.map { source =>
       spark
         .read

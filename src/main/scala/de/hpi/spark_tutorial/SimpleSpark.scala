@@ -7,6 +7,19 @@ object SimpleSpark {
 
   def main(args: Array[String]): Unit = {
 
+    var cores = 4
+    var path = "./TPCH"
+
+    val parser = args.iterator
+    while (parser.hasNext) {
+      parser.next match {
+        case "--path" => path = parser.next
+        case "--cores" => cores = parser.next.toInt
+        case default => println("Usage: java -jar <application>.jar [--path PATH=./TPCH] [--cores CORES=4]")
+          System.exit(1)
+      }
+    }
+
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
 
@@ -14,7 +27,7 @@ object SimpleSpark {
     val sparkBuilder = SparkSession
       .builder()
       .appName("InclusionDependencyDetection")
-      .master("local[8]") // local
+      .master(s"local[$cores]") // local
     val spark = sparkBuilder.getOrCreate()
 
     // Set the default number of shuffle partitions (default is 200, which is too high for local deployment)
@@ -29,8 +42,8 @@ object SimpleSpark {
     }
 
     val inputs = List("region", "nation", "supplier", "customer", "part", "lineitem", "orders")
-      .map(name => s"data/TPCH/tpch_$name.csv")
+      .map(name => s"$path/tpch_$name.csv")
 
-    time {Sindy.discoverINDs(inputs, spark)}
+    time {Sindy.discoverINDs(inputs, spark, cores * 3)}
   }
 }
